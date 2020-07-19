@@ -19,7 +19,7 @@ def bulk_insert(request):
             body_unicode = request.body.decode('utf-8')
             body = json.loads(body_unicode)
             products = body['products']
-            return JsonResponse(body, status=201)
+            return JsonResponse(body, status=200)
         except Exception as e:
             error_msg = str(e)
             reponse = {
@@ -28,6 +28,6 @@ def bulk_insert(request):
             return JsonResponse(reponse, status=400)
     else:
         reponse = {
-            'error': 'methon not allowed'
+            'error': 'method not allowed'
         }
         return JsonResponse(reponse, status=400)
