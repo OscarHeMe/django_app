@@ -1,6 +1,8 @@
+import json
+
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.http import HttpResponse
-from django.http import JsonResponse
+
 from .models import Product
 
 
@@ -12,14 +14,20 @@ def index(request):
 
 
 def bulk_insert(request):
-    try:
-        products = request.POST['products']
-        return JsonResponse(products, status=201)
-    except Exception as e:
-        error_msg = str(e)
+    if request.method == 'POST':
+        try:
+            body_unicode = request.body.decode('utf-8')
+            body = json.loads(body_unicode)
+            products = body['products']
+            return JsonResponse(body, status=201)
+        except Exception as e:
+            error_msg = str(e)
+            reponse = {
+                'error': error_msg
+            }
+            return JsonResponse(reponse, status=400)
+    else:
         reponse = {
-            'error': error_msg
+            'error': 'methon not allowed'
         }
         return JsonResponse(reponse, status=400)
-
-
