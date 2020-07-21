@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Product(models.Model):
-    id = models.CharField(primary_key=True)
+    id = models.CharField(primary_key=True, max_length=200)
     name = models.CharField(max_length=55)
     value = models.FloatField()
     discount_value = models.FloatField()
@@ -12,12 +12,13 @@ class Product(models.Model):
     @staticmethod
     def create_product(valid_data):
         try:
-            Product.id = valid_data.get('id')
-            Product.stock = valid_data.get('stock')
-            Product.value = valid_data.get('value')
-            Product.discount_value = valid_data.get('discount_value')
-            Product.stock = valid_data.get('stock')
-            return True, Product
+            product = Product()
+            product.id = valid_data.get('id')
+            product.name = valid_data.get('name')
+            product.value = valid_data.get('value')
+            product.discount_value = valid_data.get('discount_value')
+            product.stock = valid_data.get('stock')
+            return True, product
         except Exception as e:
             error_message = str(e)
             return False, error_message
@@ -35,6 +36,56 @@ class Product(models.Model):
         if error_fileds:
             return False, error_fileds
         return True, error_fileds
+
+
+    @staticmethod
+    def bulk_insert(products):
+        valid_products = []
+        error_products = []
+        for product in products:
+            try:
+                is_created, product_model = Product.create_product(product)
+                if is_created:
+                    valid_products.append(product_model)
+                    is_valid, error_fileds = product_model.validate()
+                    if is_valid:
+                        valid_products.append(product_model)
+                    else:
+                        error_dict = {
+                            'product_id': product.get('id'),
+                            'errors': error_fileds
+                        }
+                        error_products.append(error_dict)
+                else:
+                    error_dict = {
+                        'product_id': product.get('id'),
+                        'errors': [product_model]
+                    }
+                    error_products.append(error_dict)
+            except Exception as e:
+                error_msg = str(e)
+                error_dict = {
+                    'product_id': product.get('id'),
+                    'errors': [error_msg]
+                }
+                error_products.append(error_dict) 
+        for product_model in valid_products:   
+            try:
+                product_model.save()
+            except Exception as e:
+                error_msg = str(e)
+                error_dict = {
+                    'product_id': product_model.id,
+                    'errors': [error_msg]
+                }
+                error_products.append(error_dict)
+
+        if len(error_products) > 0:
+            return False, error_products
+        return True, error_products
+
+
+        
 
 
 
