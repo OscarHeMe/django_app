@@ -33,7 +33,7 @@ class Product(models.Model):
         if self.discount_value:
             if not isinstance(self.discount_value, float):
                 error_fileds.append('discount_value has to be float')
-            elif self.value < self.discount_value:
+            elif isinstance(self.value, float) and self.value < self.discount_value:
                 error_fileds.append('discount_value has to be lower than value')
         if not isinstance(self.stock, int):
             error_fileds.append('stock must be integer')
