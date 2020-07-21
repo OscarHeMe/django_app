@@ -1,16 +1,24 @@
 import json
 
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.core.serializers.json import DjangoJSONEncoder
 
 from .models import Product
 
 
 def index(request):
-    response = {
-        'message': 'Product'
-    }
-    return JsonResponse(response)
+    if request.method == 'GET':
+        products = Product.objects.all().values()
+        serialized_prods = list(products)
+        response = {
+            'products': serialized_prods
+        }
+        return JsonResponse(response, status=200)
+    else:
+        response = {
+            'error': 'method not allowed'
+        }
+        return JsonResponse(response, status=400)
 
 
 def bulk_insert(request):
