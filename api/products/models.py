@@ -11,27 +11,24 @@ class Product(models.Model):
 
     @staticmethod
     def create_product(valid_data):
-        try:
-            product = Product()
-            product.id = valid_data.get('id')
-            product.name = valid_data.get('name')
-            product.value = valid_data.get('value')
-            product.discount_value = valid_data.get('discount_value')
-            product.stock = valid_data.get('stock')
-            return True, product
-        except Exception as e:
-            error_message = str(e)
-            return False, error_message
+        product = Product()
+        product.id = valid_data.get('id')
+        product.name = valid_data.get('name')
+        product.value = valid_data.get('value')
+        product.discount_value = valid_data.get('discount_value')
+        product.stock = valid_data.get('stock')
+        return product
+
 
     def validate(self):
         error_fileds = []
-        if len(self.name) < 3:
+        if not not isinstance(self.value, str) or len(self.name) < 3:
             error_fileds.append('name')
-        if self.value <= 0 or self.value > 99999.9:
+        if not isinstance(self.value, float) or self.value <= 0 or self.value > 99999.9:
             error_fileds.append('value')
-        if self.discount_value and self.value < self.discount_value:
+        if self.discount_value and (not not isinstance(self.value, float) or self.value < self.discount_value):
             error_fileds.append('discount_value')
-        if self.stock <= -1:
+        if not isinstance(self.value, int) or self.stock <= -1:
             error_fileds.append('stock')
         if error_fileds:
             return False, error_fileds
@@ -44,22 +41,14 @@ class Product(models.Model):
         error_products = []
         for product in products:
             try:
-                is_created, product_model = Product.create_product(product)
-                if is_created:
+                product_model = Product.create_product(product)
+                is_valid, error_fileds = product_model.validate()
+                if is_valid:
                     valid_products.append(product_model)
-                    is_valid, error_fileds = product_model.validate()
-                    if is_valid:
-                        valid_products.append(product_model)
-                    else:
-                        error_dict = {
-                            'product_id': product.get('id'),
-                            'errors': error_fileds
-                        }
-                        error_products.append(error_dict)
                 else:
                     error_dict = {
                         'product_id': product.get('id'),
-                        'errors': [product_model]
+                        'errors': error_fileds
                     }
                     error_products.append(error_dict)
             except Exception as e:
