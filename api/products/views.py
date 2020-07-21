@@ -7,10 +7,10 @@ from .models import Product
 
 
 def index(request):
-    reponse = {
+    response = {
         'message': 'Product'
     }
-    return JsonResponse(reponse)
+    return JsonResponse(response)
 
 
 def bulk_insert(request):
@@ -19,15 +19,31 @@ def bulk_insert(request):
             body_unicode = request.body.decode('utf-8')
             body = json.loads(body_unicode)
             products = body['products']
-            return JsonResponse(body, status=200)
+            bulk_insert_response = Product.bulk_insert(products)
+            if bulk_insert_response[0]:
+                response = {
+                    'status': 'OK'
+                }
+                return JsonResponse(response, status=200)
+            else:
+                response = {
+                    'status': 'ERROR',
+                    'products_report': bulk_insert_response[1],
+                        # {
+                        #     “product_id”: string,
+                        #     “errors”: [string] <- Un array de strings con las validaciones que no paso.
+                        # }
+                    'number_of_products_unable_to_parse': len(bulk_insert_response[1])
+                }
+                return JsonResponse(response, status=422)
         except Exception as e:
             error_msg = str(e)
-            reponse = {
+            response = {
                 'error': error_msg
             }
-            return JsonResponse(reponse, status=400)
+            return JsonResponse(response, status=400)
     else:
-        reponse = {
+        response = {
             'error': 'method not allowed'
         }
-        return JsonResponse(reponse, status=400)
+        return JsonResponse(response, status=400)
