@@ -22,13 +22,13 @@ class Product(models.Model):
 
     def validate(self):
         error_fileds = []
-        if not not isinstance(self.value, str) or len(self.name) < 3:
+        if not not isinstance(self.name, str) or len(self.name) < 3:
             error_fileds.append('name')
         if not isinstance(self.value, float) or self.value <= 0 or self.value > 99999.9:
             error_fileds.append('value')
-        if self.discount_value and (not not isinstance(self.value, float) or self.value < self.discount_value):
+        if self.discount_value and (not not isinstance(self.discount_value, float) or self.value < self.discount_value):
             error_fileds.append('discount_value')
-        if not isinstance(self.value, int) or self.stock <= -1:
+        if not isinstance(self.stock, int) or self.stock <= -1:
             error_fileds.append('stock')
         if error_fileds:
             return False, error_fileds
